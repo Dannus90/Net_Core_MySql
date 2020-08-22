@@ -1,0 +1,8 @@
+{
+  "runtimeOptions": {
+    "additionalProbingPaths": [
+      "/home/dannus/.dotnet/store/|arch|/|tfm|",
+      "/home/dannus/.nuget/packages"
+    ]
+  }
+}
