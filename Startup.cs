@@ -31,6 +31,7 @@ namespace QuotesApi
 
             services.AddControllers().SetCompatibilityVersion(CompatibilityVersion.Version_3_0).AddXmlSerializerFormatters();
             services.AddDbContext<QuotesDbContext>(option=>option.UseMySQL(Configuration.GetConnectionString("QuotesAPIDatabase")));
+            services.AddResponseCaching();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,6 +48,8 @@ namespace QuotesApi
 
             //We make sure that the database is created.
             // dbContext.Database.EnsureCreated();
+
+            app.UseResponseCaching();
 
             app.UseHttpsRedirection();
 

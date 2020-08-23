@@ -25,8 +25,9 @@ namespace QuotesApi.Controllers
         _quotesDbContext = quotesDbContext;
     }
 
-    // Get api/quotes
+    // Get api/quotes -> If setting caching to client it will only be stored on each particular client but not on the proxy server. If stored on the proxy server it will be updated all the time. 
     [HttpGet]
+    [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
     public IActionResult Get(string sort)
     {
       IQueryable<Quote> quotes;
