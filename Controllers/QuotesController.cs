@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Numerics;
 using System.Security.AccessControl;
 using System.Reflection.Metadata;
@@ -10,11 +11,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using QuotesApi.Data;
 using QuotesApi.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace QuotesApi.Controllers
 {
   [Route("api/[controller]")]
   [ApiController]
+  [Authorize]
   public class QuotesController : ControllerBase
   {
     //Database communication
@@ -28,6 +31,7 @@ namespace QuotesApi.Controllers
     // Get api/quotes -> If setting caching to client it will only be stored on each particular client but not on the proxy server. If stored on the proxy server it will be updated all the time. 
     [HttpGet]
     [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
+    [AllowAnonymous]
     public IActionResult Get(string sort)
     {
       IQueryable<Quote> quotes;
@@ -45,6 +49,14 @@ namespace QuotesApi.Controllers
 
       }
       
+      return Ok(quotes);
+    }
+
+    [HttpGet("[action")]
+    public IActionResult MyQuote()
+    {
+      string userId = User.Claims.FirstOrDefault(c=>c.Type == ClaimTypes.NameIdentifier).Value;
+      var quotes = _quotesDbContext.Quotes.Where(q => q.UserId == userId);
       return Ok(quotes);
     }
     
@@ -91,6 +103,9 @@ namespace QuotesApi.Controllers
     [HttpPost]
     public IActionResult Post([FromBody]Quote quote)
     {
+
+      string userId = User.Claims.FirstOrDefault(c=>c.Type == ClaimTypes.NameIdentifier).Value;
+      quote.UserId = userId;
       if(!ModelState.IsValid)
       {
         return BadRequest(ModelState);
@@ -104,6 +119,8 @@ namespace QuotesApi.Controllers
     [HttpPut("{id}")]
     public IActionResult Put(int id, [FromBody]Quote quote)
     {
+
+      string userId = User.Claims.FirstOrDefault(c=>c.Type == ClaimTypes.NameIdentifier).Value;
       if(!ModelState.IsValid)
       {
         return BadRequest(ModelState);
@@ -114,6 +131,10 @@ namespace QuotesApi.Controllers
       if (entity == null)
       {
         return NotFound("No record found against this id");
+      }
+      else if (userId != entity.UserId)
+      {
+        return BadRequest("Sorry, you cannont update this record!");
       }
       else
       {
